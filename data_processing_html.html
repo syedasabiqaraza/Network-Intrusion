@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSE-CIC-IDS2018 Data Processing & Cleaning Pipeline</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .card h2 {
+            color: #4a5568;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .icon {
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-item {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 10px;
+            font-family: 'Courier New', monospace;
+            margin: 15px 0;
+            overflow-x: auto;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .code-comment {
+            color: #68d391;
+        }
+
+        .process-flow {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .process-step {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            min-width: 150px;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .process-step::after {
+            content: '→';
+            position: absolute;
+            right: -25px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .process-step:last-child::after {
+            display: none;
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .feature-category {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .feature-category h4 {
+            color: #4a5568;
+            margin-bottom: 10px;
+        }
+
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .tool-card {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .tool-name {
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+
+        .highlight {
+            background: linear-gradient(120deg, #a8edea 0%, #fed6e3 100%);
+            padding: 2px 8px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .progress-bar {
+            background: #e2e8f0;
+            height: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .process-flow {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .process-step::after {
+                content: '↓';
+                right: 50%;
+                top: 100%;
+                transform: translateX(50%);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CSE-CIC-IDS2018 Data Processing Pipeline</h1>
+            <p>Comprehensive Network Intrusion Detection Dataset Processing & Cleaning</p>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">📊</span>Dataset Overview</h2>
+            <p>The CSE-CIC-IDS2018 dataset is a comprehensive network intrusion detection dataset created by the Canadian Institute for Cybersecurity (CIC) and the Communications Security Establishment (CSE).</p>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">1TB</div>
+                    <div class="stat-label">PCAP Files</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">225,745</div>
+                    <div class="stat-label">Network Flows</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">79</div>
+                    <div class="stat-label">Features</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">9</div>
+                    <div class="stat-label">Days Activity</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">6</div>
+                    <div class="stat-label">Attack Types</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">🔄</span>Processing Architecture</h2>
+            <div class="process-flow">
+                <div class="process-step">Raw Dataset</div>
+                <div class="process-step">Pre-processing</div>
+                <div class="process-step">Clean Dataset</div>
+                <div class="process-step">Train/Test Split</div>
+                <div class="process-step">Model Training</div>
+                <div class="process-step">Evaluation</div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">🔍</span>Phase 1: Data Inspection</h2>
+            <p>Initial analysis reveals the dataset structure and quality:</p>
+            
+            <div class="code-block">
+<span class="code-comment"># Load and inspect the dataset</span>
+df = pd.read_csv('dataset.csv')
+print(df.shape)  <span class="code-comment"># Shows (225745, 79) dimensions</span>
+print(df.info())  <span class="code-comment"># Reveals data types and non-null counts</span>
+            </div>
+
+            <div class="feature-list">
+                <div class="feature-category">
+                    <h4>Network Flow (2)</h4>
+                    <p>Destination Port, Flow Duration</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Packet Statistics (12)</h4>
+                    <p>Forward/Backward packet counts, lengths, means, std</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Timing Features (15)</h4>
+                    <p>Inter-arrival times for flows and packets</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Protocol Flags (8)</h4>
+                    <p>TCP flags (FIN, SYN, RST, PSH, ACK, URG, CWE, ECE)</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Activity Patterns (8)</h4>
+                    <p>Active/Idle time statistics</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Other Features (33)</h4>
+                    <p>Bulk transfer, window sizes, packet analysis</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">📋</span>Phase 2: Data Quality Assessment</h2>
+            
+            <div class="code-block">
+<span class="code-comment"># Check for missing values</span>
+print(df.isnull().sum())
+            </div>
+
+            <h3>Key Findings:</h3>
+            <ul style="margin: 15px 0; padding-left: 20px;">
+                <li>Most columns: <span class="highlight">225,745 non-null values</span> (complete)</li>
+                <li>"Flow Bytes/s": <span class="highlight">225,741 non-null values</span> (4 missing)</li>
+                <li>Overall completeness: <span class="highlight">>99.9%</span></li>
+            </ul>
+
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">54</div>
+                    <div class="stat-label">Integer Features</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">24</div>
+                    <div class="stat-label">Float Features</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">1</div>
+                    <div class="stat-label">Object Feature (Label)</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">🧹</span>Phase 3: Comprehensive Data Cleaning</h2>
+            
+            <h3>Step 1: Handle Missing Values</h3>
+            <div class="code-block">
+<span class="code-comment"># Remove columns that are mostly empty (&lt;90% populated)</span>
+df.dropna(axis=1, thresh=len(df)*0.9, inplace=True)
+            </div>
+
+            <h3>Step 2: Handle Infinite Values</h3>
+            <div class="code-block">
+<span class="code-comment"># Replace infinite values with NaN</span>
+df.replace([np.inf, -np.inf], np.nan, inplace=True)
+            </div>
+            <p><strong>Common Sources:</strong> Division by zero in rate calculations, mathematical operations on very small denominators</p>
+
+            <h3>Step 3: Remove Incomplete Records</h3>
+            <div class="code-block">
+<span class="code-comment"># Drop rows with any NaN values</span>
+df.dropna(inplace=True)
+            </div>
+
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 99.98%;">99.98% Data Retention</div>
+            </div>
+            <p style="text-align: center; margin: 10px 0;"><strong>Impact:</strong> 225,745 → 225,711 records (34 removed)</p>
+
+            <h3>Step 4: Remove Irrelevant Features</h3>
+            <div class="code-block">
+<span class="code-comment"># Remove identifier columns</span>
+df.drop(columns=['Flow ID', 'Timestamp'], errors='ignore', inplace=True)
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">⚙️</span>Phase 4: Advanced Preprocessing</h2>
+            
+            <h3>Normalization and Scaling</h3>
+            <div class="code-block">
+<span class="code-comment"># Normalize features to [0,1] range using MinMaxScaler</span>
+from sklearn.preprocessing import MinMaxScaler
+scaler = MinMaxScaler()
+numerical_features = df.select_dtypes(include=[np.number]).columns
+df[numerical_features] = scaler.fit_transform(df[numerical_features])
+            </div>
+
+            <h3>Feature Engineering Steps:</h3>
+            <ul style="margin: 15px 0; padding-left: 20px;">
+                <li><strong>Header Removal:</strong> Convert to NumPy arrays for neural networks</li>
+                <li><strong>Feature Reduction:</strong> Applied autoencoder and PCA (78 → 18 features)</li>
+                <li><strong>Target Encoding:</strong> Convert categorical labels to numerical format</li>
+            </ul>
+
+            <h3>Class Distribution (Attack Types):</h3>
+            <div class="stats-grid">
+                <div class="stat-item" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);">
+                    <div class="stat-value">DoS</div>
+                    <div class="stat-label">Highest Frequency</div>
+                </div>
+                <div class="stat-item" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+                    <div class="stat-value">DDoS</div>
+                    <div class="stat-label">Second Highest</div>
+                </div>
+                <div class="stat-item" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                    <div class="stat-value">BruteForce</div>
+                    <div class="stat-label">Third Highest</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">✂️</span>Phase 5: Dataset Splitting</h2>
+            
+            <div class="code-block">
+<span class="code-comment"># 90% training, 10% testing (research methodology)</span>
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.1, random_state=42, stratify=y
+)
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">90%</div>
+                    <div class="stat-label">Training Set</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">10%</div>
+                    <div class="stat-label">Testing Set</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">10-Fold</div>
+                    <div class="stat-label">Cross-Validation</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">🛠️</span>Tools & Technologies</h2>
+            
+            <div class="tools-grid">
+                <div class="tool-card">
+                    <div class="tool-name">Orange Data Mining</div>
+                    <p>GUI-based tool for initial inconsistency removal. Handles NaN, null, and infinity values with visual exploration.</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-name">Pandas Framework</div>
+                    <p>Primary data manipulation tool with efficient CSV processing and comprehensive cleaning functions.</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-name">NumPy</div>
+                    <p>Numerical computing foundation for array operations and mathematical transformations.</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-name">Scikit-learn</div>
+                    <p>Data preprocessing, train/test splitting, feature scaling, and cross-validation implementation.</p>
+                </div>
+                <div class="tool-card">
+                    <div class="tool-name">Keras/TensorFlow</div>
+                    <p>Deep learning model implementation with CNN and LSTM architectures for intrusion detection.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">✅</span>Final Quality Assurance</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-value">225,711 × 79</div>
+                    <div class="stat-label">Final Dimensions</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">100%</div>
+                    <div class="stat-label">Data Completeness</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">99.98%</div>
+                    <div class="stat-label">Record Retention</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">[0,1]</div>
+                    <div class="stat-label">Normalized Range</div>
+                </div>
+            </div>
+
+            <h3>Quality Metrics Achieved:</h3>
+            <ul style="margin: 15px 0; padding-left: 20px;">
+                <li><strong>Completeness:</strong> 99.98% record retention with no missing values</li>
+                <li><strong>Consistency:</strong> No infinite or impossible values remain</li>
+                <li><strong>Relevance:</strong> Only predictive features retained</li>
+                <li><strong>Reliability:</strong> Consistent data types and normalized ranges</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">🎯</span>Impact on Model Performance</h2>
+            <p>This comprehensive cleaning pipeline ensures:</p>
+            
+            <div class="feature-list">
+                <div class="feature-category">
+                    <h4>Data Integrity</h4>
+                    <p>Eliminates corrupted or invalid records that could mislead the learning process</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Feature Quality</h4>
+                    <p>Removes noise and irrelevant information, focusing on predictive signals</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Model Stability</h4>
+                    <p>Prevents training instabilities caused by bad data or extreme values</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Generalization</h4>
+                    <p>Clean, normalized data improves model's ability to generalize to new attacks</p>
+                </div>
+                <div class="feature-category">
+                    <h4>Computational Efficiency</h4>
+                    <p>Optimized data structures enable faster training and inference</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

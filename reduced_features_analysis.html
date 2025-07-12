@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSE-CIC-IDS2018: 18 Key Features After Dimensionality Reduction</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #1e3c72, #2a5298);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .reduction-stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .arrow {
+            font-size: 2rem;
+            color: #667eea;
+            display: flex;
+            align-items: center;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .card h2 {
+            color: #2d3748;
+            font-size: 1.8rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .feature-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .feature-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .feature-description {
+            font-size: 0.95rem;
+            line-height: 1.5;
+            margin-bottom: 15px;
+            opacity: 0.95;
+        }
+
+        .feature-importance {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+        .category-section {
+            margin: 30px 0;
+        }
+
+        .category-header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .category-title {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .category-count {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .methodology-card {
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+        }
+
+        .methodology-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 15px;
+        }
+
+        .methodology-steps {
+            list-style: none;
+            padding: 0;
+        }
+
+        .methodology-steps li {
+            background: rgba(255, 255, 255, 0.7);
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .impact-item {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .impact-percentage {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2d3748;
+            margin-bottom: 10px;
+        }
+
+        .impact-label {
+            font-size: 1rem;
+            color: #4a5568;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .reduction-stats {
+                flex-direction: column;
+                align-items: center;
+                gap: 15px;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CSE-CIC-IDS2018: 18 Key Features</h1>
+            <p>Selected through Autoencoder and PCA Dimensionality Reduction</p>
+            
+            <div class="reduction-stats">
+                <div class="stat-box">
+                    <div class="stat-number">78</div>
+                    <div class="stat-label">Original Features</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="stat-box">
+                    <div class="stat-number">18</div>
+                    <div class="stat-label">Selected Features</div>
+                </div>
+                <div class="arrow">→</div>
+                <div class="stat-box">
+                    <div class="stat-number">77%</div>
+                    <div class="stat-label">Reduction</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">🎯</span>Feature Selection Methodology</h2>
+            
+            <div class="methodology-card">
+                <div class="methodology-title">Autoencoder Approach</div>
+                <ul class="methodology-steps">
+                    <li><strong>Encoding:</strong> Compress 78 features into lower dimensional latent space</li>
+                    <li><strong>Reconstruction:</strong> Decode back to original feature space</li>
+                    <li><strong>Feature Ranking:</strong> Identify features with highest reconstruction importance</li>
+                    <li><strong>Selection:</strong> Retain features that contribute most to attack pattern recognition</li>
+                </ul>
+            </div>
+
+            <div class="methodology-card">
+                <div class="methodology-title">PCA (Principal Component Analysis)</div>
+                <ul class="methodology-steps">
+                    <li><strong>Variance Analysis:</strong> Calculate variance explained by each principal component</li>
+                    <li><strong>Correlation Removal:</strong> Eliminate highly correlated redundant features</li>
+                    <li><strong>Dimensionality Reduction:</strong> Project data onto lower dimensional space</li>
+                    <li><strong>Feature Importance:</strong> Identify original features with highest loadings</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="category-section">
+            <div class="category-header">
+                <div class="category-title">Core Traffic Flow Features</div>
+                <div class="category-count">6 Features - Most Discriminative</div>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-name">Flow Duration</div>
+                    <div class="feature-description">Time duration of the network flow. Critical for distinguishing between short-burst attacks and normal traffic patterns.</div>
+                    <div class="feature-importance">High Importance</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-name">Total Fwd Packets</div>
+                    <div class="feature-description">Number of packets sent in forward direction. Essential for identifying DoS/DDoS attack patterns.</div>
+                    <div class="feature-importance">High Importance</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-name">Total Backward Packets</div>
+                    <div class="feature-description">Number of packets in backward direction. Reveals communication patterns and potential data exfiltration.</div>
+                    <div class="feature-importance">High Importance</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-name">Total Length of Fwd Packets</div>
+                    <div class="feature-description">Cumulative bytes in forward direction. Indicates data volume and potential payload anomalies.</div>
+                    <div class="feature-importance">High Importance</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-name">Flow Bytes/s</div>
+                    <div class="feature-description">Data transfer rate. Crucial for detecting high-volume attacks and bandwidth abuse.</div>
+                    <div class="feature-importance">High Importance</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-name">Flow Packets/s</div>
+                    <div class="feature-description">Packet transmission rate. Key indicator of flooding attacks and abnormal traffic intensity.</div>
+                    <div class="feature-importance">High Importance</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category-section">
+            <div class="category-header">
+                <div class="category-title">Packet Size Analysis</div>
+                <div class="category-count">4 Features - Pattern Recognition</div>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-name">Fwd Packet Length Mean</div>
+                    <div class="feature-description">Average forward packet size. Distinguishes between different attack types and normal communications.</div>
+                    <div class="feature-importance">Medium-High</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-name">Fwd Packet Length Std</div>
+                    <div class="feature-description">Standard deviation of forward packet sizes. Indicates variability in attack patterns.</div>
+                    <div class="feature-importance">Medium-High</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-name">Packet Length Mean</div>
+                    <div class="feature-description">Overall average packet size. Fundamental for traffic characterization and anomaly detection.</div>
+                    <div class="feature-importance">Medium-High</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-name">Average Packet Size</div>
+                    <div class="feature-description">Mean packet size across entire flow. Essential for protocol analysis and attack classification.</div>
+                    <div class="feature-importance">Medium-High</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category-section">
+            <div class="category-header">
+                <div class="category-title">Timing and Inter-Arrival Features</div>
+                <div class="category-count">4 Features - Behavioral Analysis</div>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-name">Flow IAT Mean</div>
+                    <div class="feature-description">Average inter-arrival time between packets. Critical for detecting automated vs. human-generated traffic.</div>
+                    <div class="feature-importance">High Importance</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-name">Flow IAT Std</div>
+                    <div class="feature-description">Variability in packet timing. Reveals regularity patterns typical of botnet communications.</div>
+                    <div class="feature-importance">Medium-High</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-name">Fwd IAT Mean</div>
+                    <div class="feature-description">Forward direction timing patterns. Essential for identifying coordinated attacks and scanning behavior.</div>
+                    <div class="feature-importance">Medium-High</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-name">Active Mean</div>
+                    <div class="feature-description">Average time flow was active before becoming idle. Indicates sustained attack duration.</div>
+                    <div class="feature-importance">Medium</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="category-section">
+            <div class="category-header">
+                <div class="category-title">Protocol and Connection Features</div>
+                <div class="category-count">4 Features - Protocol Analysis</div>
+            </div>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-name">Destination Port</div>
+                    <div class="feature-description">Target port number. Critical for identifying service-specific attacks and port scanning activities.</div>
+                    <div class="feature-importance">High Importance</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-name">PSH Flag Count</div>
+                    <div class="feature-description">Number of PUSH flags. Indicates data transmission urgency and potential payload delivery attacks.</div>
+                    <div class="feature-importance">Medium</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-name">ACK Flag Count</div>
+                    <div class="feature-description">Acknowledgment flag frequency. Essential for detecting connection manipulation and TCP-based attacks.</div>
+                    <div class="feature-importance">Medium</div>
+                </div>
+                
+                <div class="feature-card">
+                    <div class="feature-name">Init_Win_bytes_forward</div>
+                    <div class="feature-description">Initial TCP window size. Reveals client/server characteristics and potential OS fingerprinting.</div>
+                    <div class="feature-importance">Medium</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">📊</span>Feature Selection Impact</h2>
+            
+            <div class="impact-grid">
+                <div class="impact-item">
+                    <div class="impact-percentage">95%+</div>
+                    <div class="impact-label">Information Retention</div>
+                </div>
+                <div class="impact-item">
+                    <div class="impact-percentage">77%</div>
+                    <div class="impact-label">Dimensionality Reduction</div>
+                </div>
+                <div class="impact-item">
+                    <div class="impact-percentage">3-5x</div>
+                    <div class="impact-label">Training Speed Improvement</div>
+                </div>
+                <div class="impact-item">
+                    <div class="impact-percentage">85%+</div>
+                    <div class="impact-label">Noise Reduction</div>
+                </div>
+            </div>
+
+            <div class="methodology-card">
+                <div class="methodology-title">Why These 18 Features?</div>
+                <ul class="methodology-steps">
+                    <li><strong>Maximum Variance:</strong> These features capture the most variation in the dataset, preserving discriminative power</li>
+                    <li><strong>Low Correlation:</strong> Minimal redundancy between selected features, ensuring each contributes unique information</li>
+                    <li><strong>Attack Relevance:</strong> Proven effectiveness in distinguishing between different attack types (DoS, DDoS, BruteForce, etc.)</li>
+                    <li><strong>Computational Efficiency:</strong> Optimal balance between model performance and computational complexity</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><span class="icon">🎯</span>Attack Type Discrimination</h2>
+            
+            <div class="features-grid">
+                <div class="feature-card" style="background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);">
+                    <div class="feature-name">DoS/DDoS Detection</div>
+                    <div class="feature-description">Flow Duration, Flow Bytes/s, Flow Packets/s, Total Fwd Packets are primary indicators for volumetric attacks.</div>
+                    <div class="feature-importance">Critical Features</div>
+                </div>
+                
+                <div class="feature-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                    <div class="feature-name">BruteForce Identification</div>
+                    <div class="feature-description">Destination Port, Flow IAT patterns, and packet size consistency reveal systematic login attempts.</div>
+                    <div class="feature-importance">Key Indicators</div>
+                </div>
+                
+                <div class="feature-card" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+                    <div class="feature-name">Botnet Communications</div>
+                    <div class="feature-description">Flow IAT Std, Active Mean, and timing regularity patterns distinguish automated bot traffic.</div>
+                    <div class="feature-importance">Behavioral Patterns</div>
+                </div>
+                
+                <div class="feature-card" style="background: linear-gradient(135deg, #d299c2 0%, #fef9d7 100%);">
+                    <div class="feature-name">Web Attacks</div>
+                    <div class="feature-description">Packet length statistics, PSH flags, and payload characteristics identify malicious web requests.</div>
+                    <div class="feature-importance">Content Analysis</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
